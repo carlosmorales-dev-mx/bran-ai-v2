@@ -285,6 +285,25 @@ export function useChat() {
         }
     };
 
+    // ✅ NUEVO: borra una sesión de chat (backend + estado local)
+    const deleteSession = async (sessionId: string) => {
+        try {
+            await request(`/chat/${sessionId}`, { method: "DELETE" });
+
+            realSessions.value = realSessions.value.filter(
+                (s) => s.id !== sessionId
+            );
+
+            // Si la sesión activa era la que se borró, arranca una conversación nueva
+            if (activeSessionId.value === sessionId) {
+                newConversation();
+            }
+        } catch (error) {
+            console.error("Error borrando sesión:", error);
+            throw error;
+        }
+    };
+
     return {
         sessions,
         activeSessionId,
@@ -297,5 +316,6 @@ export function useChat() {
         sendMessage,
         uploadFiles,
         newConversation,
+        deleteSession,
     };
 }

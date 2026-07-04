@@ -68,6 +68,12 @@ export class KnowledgeController {
         return this.service.deleteDocument(id);
     }
 
+    // ✅ NUEVO: reindexar un documento ya existente
+    @Post(":id/reindex")
+    reindexDocument(@Param("id") id: string) {
+        return this.service.reindexDocument(id);
+    }
+
     @Get("metrics")
     getMetrics() {
         return this.service.getMetrics();

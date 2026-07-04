@@ -2,8 +2,10 @@
 import ChatMessages from "@shared/ChatMessages.vue";
 import ChatInput from "@shared/ChatInput.vue";
 import Badge from "@shared/Badge.vue";
+import ConfirmModal from "@shared/ConfirmModal.vue";
 
 const { t } = useT();
+const { success, error: toastError } = useToast();
 
 type SendPayload = {
   text: string;
@@ -22,6 +24,7 @@ const {
   sendMessage,
   uploadFiles,
   newConversation,
+  deleteSession,
 } = useChat();
 
 const activeSession = computed(() =>
@@ -35,6 +38,40 @@ const subtitle = computed(() =>
     ? t("chat_draft")
     : t("chat_admin_subtitle")
 );
+
+// ── Borrar chat: estado del modal de confirmación ─────────────────
+const confirmOpen = ref(false);
+const confirmLoading = ref(false);
+const pendingSessionId = ref<string | null>(null);
+
+function askDeleteSession(sessionId: string, event: Event) {
+  event.stopPropagation(); // evita seleccionar la sesión al hacer click en el ícono
+  pendingSessionId.value = sessionId;
+  confirmOpen.value = true;
+}
+
+function cancelDeleteSession() {
+  if (confirmLoading.value) return;
+  confirmOpen.value = false;
+  pendingSessionId.value = null;
+}
+
+async function confirmDeleteSession() {
+  if (!pendingSessionId.value) return;
+
+  confirmLoading.value = true;
+
+  try {
+    await deleteSession(pendingSessionId.value);
+    success("Chat eliminado correctamente.");
+    confirmOpen.value = false;
+    pendingSessionId.value = null;
+  } catch (err: any) {
+    toastError(err?.message || "No pude eliminar el chat.");
+  } finally {
+    confirmLoading.value = false;
+  }
+}
 
 onMounted(async () => {
   await fetchSessions();
@@ -108,6 +145,21 @@ function formatSessionDate(value?: string) {
             ? t("chat_draft_label")
             : formatSessionDate(session.updatedAt) }}
         </span>
+
+        <!-- ✅ NUEVO: borrar chat — solo sesiones ya guardadas (no borradores) -->
+        <button
+          v-if="!session.isDraft"
+          type="button"
+          class="session-trash"
+          title="Eliminar chat"
+          @click="askDeleteSession(session.id, $event)"
+        >
+          <svg viewBox="0 0 18 18" fill="none">
+            <path d="M3 5h12M7 5V3h4v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 5l1 10h6l1-10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7.5 8v5M10.5 8v5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </button>
       </button>
     </aside>
 
@@ -135,6 +187,18 @@ function formatSessionDate(value?: string) {
         />
       </div>
     </main>
+
+    <ConfirmModal
+      :open="confirmOpen"
+      title="Eliminar chat"
+      message="¿Eliminar esta conversación? Esta acción no se puede deshacer."
+      confirm-label="Eliminar"
+      cancel-label="Cancelar"
+      :loading="confirmLoading"
+      danger
+      @confirm="confirmDeleteSession"
+      @cancel="cancelDeleteSession"
+    />
   </section>
 </template>
 
@@ -169,6 +233,7 @@ function formatSessionDate(value?: string) {
 }
 
 .session {
+  position: relative;
   width: 100%;
   text-align: left;
   background: white;
@@ -194,11 +259,43 @@ function formatSessionDate(value?: string) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  padding-right: 24px; /* deja espacio para el ícono de borrar */
 }
 
 .session span {
   color: var(--tx-m);
   font-size: 10px;
+}
+
+.session-trash {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  border-radius: 7px;
+  color: var(--tx-m);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.15s;
+}
+
+.session-trash svg {
+  width: 13px;
+  height: 13px;
+}
+
+.session:hover .session-trash {
+  opacity: 1;
+}
+
+.session-trash:hover {
+  background: #fff1f2;
+  color: var(--crimson);
 }
 
 .empty-state {

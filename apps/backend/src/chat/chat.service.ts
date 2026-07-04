@@ -336,6 +336,32 @@ export class ChatService {
         });
     }
 
+    // ✅ NUEVO: borra una sesión completa (usage desvinculado, mensajes y sesión eliminados)
+    async deleteSession(userId: string, sessionId: string) {
+        const session = await this.prisma.chatSession.findFirst({
+            where: { id: sessionId, userId },
+            select: { id: true },
+        });
+
+        if (!session) {
+            throw new NotFoundException("Session no encontrada");
+        }
+
+        // Los registros de Usage tienen sessionId opcional (onDelete: SetNull en el schema
+        // no está declarado explícitamente para Usage->ChatSession, así que lo desvinculamos
+        // manualmente antes de borrar para no romper la FK).
+        await this.prisma.usage.updateMany({
+            where: { sessionId },
+            data: { sessionId: null },
+        });
+
+        await this.prisma.message.deleteMany({ where: { sessionId } });
+
+        await this.prisma.chatSession.delete({ where: { id: sessionId } });
+
+        return { status: "deleted", id: sessionId };
+    }
+
     // ── Private helpers ──────────────────────────────────────────────────────
 
     private async answerWithRagOnlyPipeline(

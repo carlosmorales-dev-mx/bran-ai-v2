@@ -133,12 +133,19 @@ async def ingest_file(file: UploadFile = File(...)):
         mime_type=file.content_type,
     )
 
-    return index_text(
+    result = index_text(
         title=file.filename or "Archivo subido",
         content=text,
         doc_type=file_type,
         source="upload",
     )
+
+    # ✅ NUEVO: devolvemos el texto extraído para que el backend lo guarde
+    # en Postgres (Document.extractedText). Sin esto no hay forma de
+    # reindexar el documento después sin volver a subir el archivo.
+    result["extractedText"] = text
+
+    return result
 
 
 @router.post("/extract/file")

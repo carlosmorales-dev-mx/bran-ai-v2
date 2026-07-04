@@ -3,7 +3,7 @@ from google import genai
 from google.genai import types
 
 from core.config import (
-    LLM_PROVIDER,
+    EMBEDDING_PROVIDER,
     GEMINI_API_KEY,
     DEEPSEEK_API_KEY,
     DEEPSEEK_BASE_URL,
@@ -66,24 +66,28 @@ def deepseek_embeddings(texts: list[str]):
     return [item["embedding"] for item in data["data"]]
 
 
+# ✅ FIX: usa EMBEDDING_PROVIDER (independiente de LLM_PROVIDER).
+# Nota: a la fecha, DeepSeek no expone una API pública de embeddings.
+# deepseek_embeddings() queda aquí por si en el futuro la habilitan,
+# pero EMBEDDING_PROVIDER debería mantenerse en "gemini" mientras tanto.
 def embed_documents(texts: list[str]):
-    if LLM_PROVIDER == "gemini":
+    if EMBEDDING_PROVIDER == "gemini":
         return gemini_embed_documents(texts)
 
-    if LLM_PROVIDER == "deepseek":
+    if EMBEDDING_PROVIDER == "deepseek":
         return deepseek_embeddings(texts)
 
-    raise Exception(f"LLM_PROVIDER inválido: {LLM_PROVIDER}")
+    raise Exception(f"EMBEDDING_PROVIDER inválido: {EMBEDDING_PROVIDER}")
 
 
 def embed_query(texts: list[str]):
-    if LLM_PROVIDER == "gemini":
+    if EMBEDDING_PROVIDER == "gemini":
         return gemini_embed_query(texts)
 
-    if LLM_PROVIDER == "deepseek":
+    if EMBEDDING_PROVIDER == "deepseek":
         return deepseek_embeddings(texts)
 
-    raise Exception(f"LLM_PROVIDER inválido: {LLM_PROVIDER}")
+    raise Exception(f"EMBEDDING_PROVIDER inválido: {EMBEDDING_PROVIDER}")
 
 
 # Compatibilidad temporal si algún archivo viejo sigue importando embed_texts

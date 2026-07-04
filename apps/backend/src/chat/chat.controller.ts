@@ -9,6 +9,7 @@ import {
     UploadedFile,
     UseInterceptors,
     BadRequestException,
+    Delete,
 } from "@nestjs/common";
 import { Response } from "express";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -111,5 +112,15 @@ export class ChatController {
         @User() user: JwtUser
     ) {
         return this.chatService.getSessionMessages(user.id, id);
+    }
+
+    // ✅ NUEVO: borrar una sesión de chat completa (mensajes + usage + sesión)
+    @UseGuards(JwtGuard)
+    @Delete(":id")
+    deleteSession(
+        @Param("id") id: string,
+        @User() user: JwtUser
+    ) {
+        return this.chatService.deleteSession(user.id, id);
     }
 }

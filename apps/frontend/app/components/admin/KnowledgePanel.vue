@@ -24,6 +24,9 @@ const confirmOpen    = ref(false);
 const confirmLoading = ref(false);
 const pendingDoc     = ref<KnowledgeDocument | null>(null);
 
+// ✅ NUEVO: estado de reindexado por documento
+const reindexingId = ref<string | null>(null);
+
 const filters = computed((): { label: string; value: FilterType }[] => [
   { label: t("know_filter_all"), value: "all" },
   { label: "PDF", value: "pdf" }, { label: "Video", value: "video" },
@@ -105,6 +108,22 @@ async function confirmDelete() {
   } catch (err: any) {
     toastError(err?.message || "No pude eliminar el contexto.");
   } finally { confirmLoading.value = false; }
+}
+
+// ✅ NUEVO: reindexar un documento sin volver a subirlo
+async function reindexDocument(doc: KnowledgeDocument) {
+  reindexingId.value = doc.id;
+  try {
+    const updated = await request<KnowledgeDocument>(`/knowledge/${doc.id}/reindex`, {
+      method: "POST",
+    });
+    docs.value = docs.value.map((d) => (d.id === doc.id ? { ...d, ...updated } : d));
+    success(`"${doc.title}" reindexado correctamente.`);
+  } catch (err: any) {
+    toastError(err?.message || "No pude reindexar el documento.");
+  } finally {
+    reindexingId.value = null;
+  }
 }
 
 onMounted(loadKnowledge);
@@ -192,6 +211,21 @@ onMounted(loadKnowledge);
         </div>
 
         <Badge :label="badgeLabel(doc.status)" :color="badgeColor(doc.status)" />
+
+        <!-- ✅ NUEVO: reindexar sin volver a subir el archivo -->
+        <button
+          type="button"
+          class="reindex"
+          title="Reindexar"
+          :disabled="reindexingId === doc.id || doc.status === 'PENDING'"
+          @click="reindexDocument(doc)"
+        >
+          <span v-if="reindexingId === doc.id" class="btn-spinner-sm" />
+          <svg v-else viewBox="0 0 18 18" fill="none">
+            <path d="M16 9A7 7 0 1 1 9 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M9 2l2.5 2.5L9 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
 
         <!-- ✅ SVG trash — limpio y preciso -->
         <button type="button" class="trash" title="Eliminar" @click="askDelete(doc)">
@@ -324,6 +358,37 @@ p { color: var(--tx-m); font-size: 11px; margin-top: 3px; }
 .meta { width: 52px; text-align: right; flex-shrink: 0; }
 .meta strong { display: block; color: var(--tx); font-size: 14px; font-weight: 700; }
 .meta span { color: var(--tx-m); font-size: 9px; }
+
+/* ✅ NUEVO: botón de reindexar */
+.reindex {
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: grid;
+  place-items: center;
+  color: var(--tx-m);
+  flex-shrink: 0;
+}
+.reindex svg { width: 15px; height: 15px; }
+.reindex:hover:not(:disabled) {
+  background: var(--blue-dim, rgba(45, 91, 227, 0.08));
+  border-color: rgba(45, 91, 227, 0.25);
+  color: var(--blue, #2d5be3);
+}
+.reindex:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-spinner-sm {
+  width: 13px; height: 13px;
+  border: 2px solid rgba(45, 91, 227, 0.25);
+  border-top-color: var(--blue, #2d5be3);
+  border-radius: 999px;
+  display: inline-block;
+  animation: spin 0.7s linear infinite;
+}
 
 .trash {
   width: 32px;

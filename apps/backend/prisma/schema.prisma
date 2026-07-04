@@ -39,6 +39,10 @@ model Document {
   chunks        Int      @default(0)
   ragDocumentId String?
 
+  // ✅ NUEVO: guarda el texto ya extraído (de PDF, DOCX, URL, texto manual, etc.)
+  // Sin esto no hay forma de reindexar un documento sin volver a subir el archivo original.
+  extractedText String?
+
   uploadedById String?
   uploadedBy   User? @relation("UploadedDocuments", fields: [uploadedById], references: [id])
 

@@ -50,6 +50,8 @@ export class KnowledgeService {
                 uploadedBy: {
                     select: { id: true, name: true, email: true },
                 },
+                // extractedText NO se incluye aquí a propósito: puede pesar
+                // mucho y el frontend no lo necesita en el listado.
             },
         });
     }
@@ -63,6 +65,8 @@ export class KnowledgeService {
                 status: "PENDING",
                 sizeBytes: Buffer.byteLength(dto.content, "utf8"),
                 uploadedById: userId,
+                // ✅ NUEVO: el contenido manual ya es el texto a indexar, se guarda tal cual
+                extractedText: dto.content,
             },
         });
 
@@ -136,6 +140,8 @@ export class KnowledgeService {
                     sizeBytes: Buffer.byteLength(text, "utf8"),
                     chunks: ragResponse?.chunks ?? 0,
                     ragDocumentId: ragResponse?.document_id ?? null,
+                    // ✅ NUEVO: guardamos el texto ya extraído de la URL
+                    extractedText: text,
                 },
                 include: {
                     uploadedBy: { select: { id: true, name: true, email: true } },
@@ -190,6 +196,8 @@ export class KnowledgeService {
                     status: "INDEXED",
                     chunks: ragResponse?.chunks ?? 0,
                     ragDocumentId: ragResponse?.document_id ?? null,
+                    // ✅ NUEVO: el RAG ahora devuelve el texto extraído del archivo
+                    extractedText: ragResponse?.extractedText ?? null,
                 },
                 include: {
                     uploadedBy: { select: { id: true, name: true, email: true } },
@@ -232,6 +240,69 @@ export class KnowledgeService {
             title: doc.title,
             ragDeleted: Boolean(doc.ragDocumentId),
         };
+    }
+
+    // ✅ NUEVO: reindexar un documento existente sin volver a subirlo.
+    // Requiere que extractedText ya esté guardado (documentos indexados
+    // ANTES de este fix no lo tendrán — hay que volver a subirlos una vez).
+    async reindexDocument(id: string) {
+        const doc = await this.prisma.document.findUnique({ where: { id } });
+
+        if (!doc) {
+            throw new NotFoundException("Documento no encontrado");
+        }
+
+        if (!doc.extractedText || !doc.extractedText.trim()) {
+            throw new BadRequestException(
+                "No hay texto guardado para este documento. Vuelve a subirlo para poder reindexarlo."
+            );
+        }
+
+        await this.prisma.document.update({
+            where: { id },
+            data: { status: "PENDING" },
+        });
+
+        try {
+            // Borra los embeddings viejos antes de generar los nuevos,
+            // para no dejar chunks huérfanos duplicados en ChromaDB.
+            if (doc.ragDocumentId) {
+                try {
+                    await this.rag.deleteDocument(doc.ragDocumentId);
+                } catch (err) {
+                    console.error("REINDEX: error borrando embeddings previos:", err);
+                }
+            }
+
+            const ragResponse = await this.rag.ingest({
+                title: doc.title,
+                content: doc.extractedText,
+                type: doc.type,
+                source: doc.source,
+            });
+
+            const updated = await this.prisma.document.update({
+                where: { id },
+                data: {
+                    status: "INDEXED",
+                    chunks: ragResponse?.chunks ?? 0,
+                    ragDocumentId: ragResponse?.document_id ?? null,
+                },
+                include: {
+                    uploadedBy: { select: { id: true, name: true, email: true } },
+                },
+            });
+
+            return updated;
+        } catch (err) {
+            await this.prisma.document.update({
+                where: { id },
+                data: { status: "ERROR" },
+            });
+
+            console.error("KNOWLEDGE REINDEX ERROR:", err);
+            throw new InternalServerErrorException("Error reindexando documento");
+        }
     }
 
     // ✅ FIX: getMetrics usa RagProxyService (no fetch directo con URL hardcodeada)

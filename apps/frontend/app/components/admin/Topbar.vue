@@ -8,11 +8,14 @@ const pageTitle = computed(() => {
   return t("page_dashboard");
 });
 
+// ✅ FIX: reflejaba "Gemini Flash" aunque el LLM de generación real es DeepSeek.
+// Gemini se sigue usando internamente solo para embeddings/imagen/video, pero
+// el badge debe mostrar el modelo que realmente redacta las respuestas del chat.
 const services = [
-  { label: "NestJS",       color: "#16a34a" },
-  { label: "FastAPI",      color: "#2d5be3" },
-  { label: "Gemini Flash", color: "#4f46e5" },
-  { label: "Aiven",        color: "#16955a" },
+  { label: "NestJS",   color: "#16a34a" },
+  { label: "FastAPI",  color: "#2d5be3" },
+  { label: "DeepSeek", color: "#4f46e5" },
+  { label: "Aiven",    color: "#16955a" },
 ];
 </script>
 
