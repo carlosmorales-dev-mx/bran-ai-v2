@@ -75,14 +75,6 @@ async function logout() {
         <button type="button" :class="{ active: preview.lang === 'es' }" @click="preview.setLang('es')">ES</button>
       </div>
 
-      <div class="user-card">
-        <div class="avatar">{{ auth.user?.name?.charAt(0) || "A" }}</div>
-        <div class="user-info">
-          <strong>{{ auth.user?.name || "Admin" }}</strong>
-          <span>{{ auth.user?.email || "admin" }}</span>
-        </div>
-      </div>
-
       <button class="logout-btn" type="button" @click="logout">
         <svg viewBox="0 0 20 20" fill="none">
           <path d="M7 15l-4-5 4-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -233,43 +225,6 @@ nav {
   background: white;
   color: var(--tx);
   box-shadow: var(--shadow);
-}
-
-.user-card {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 8px 10px;
-  border-radius: 11px;
-  background: var(--bg);
-}
-.avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--crimson), var(--blue));
-  display: grid;
-  place-items: center;
-  color: white;
-  font-weight: 800;
-  flex-shrink: 0;
-  font-size: 12px;
-}
-.user-info { min-width: 0; }
-.user-info strong {
-  display: block;
-  color: var(--tx);
-  font-size: 12px;
-  line-height: 1.3;
-  font-weight: 700;
-}
-.user-info span {
-  display: block;
-  color: var(--tx-m);
-  font-size: 10px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .logout-btn {
