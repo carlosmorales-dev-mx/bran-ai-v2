@@ -1,12 +1,12 @@
-# bran.ai v2 🤖
+# bran.ai v2
 
 Sistema de helpdesk con IA conversacional (RAG) multi-usuario. Combina un frontend moderno, un backend de orquestación robusto y un motor de IA independiente para dar soporte inteligente basado en documentación propia de cada organización.
 
 > Proyecto personal desarrollado como parte de mi portafolio como Desarrollador Backend Jr. Construido con asistencia de IA (workflow AI-assisted development), con foco en arquitectura, integración de servicios y product-building.
 
-## 🧠 ¿Qué hace?
+## Que hace
 
-bran.ai v2 permite a una organización subir su documentación interna y ofrecer a sus usuarios (o clientes) un asistente conversacional que responde preguntas basándose **únicamente en esa documentación**, usando RAG (Retrieval-Augmented Generation) en lugar de depender del conocimiento general del modelo.
+bran.ai v2 permite a una organización subir su documentación interna y ofrecer a sus usuarios (o clientes) un asistente conversacional que responde preguntas basándose únicamente en esa documentación, usando RAG (Retrieval-Augmented Generation) en lugar de depender del conocimiento general del modelo.
 
 - Autenticación y gestión de usuarios por rol
 - Ingesta y vectorización de documentos
@@ -14,9 +14,9 @@ bran.ai v2 permite a una organización subir su documentación interna y ofrecer
 - Generación de respuestas contextualizadas vía DeepSeek API
 - Interfaz multi-usuario con soporte i18n (ES/EN)
 
-## 🏗️ Arquitectura
+## Arquitectura
 
-El proyecto está organizado como un **monorepo** con tres servicios independientes que se comunican entre sí:
+El proyecto está organizado como un monorepo con tres servicios independientes que se comunican entre sí:
 
 ```
 bran.ai v2/
@@ -26,10 +26,9 @@ bran.ai v2/
 │   └── backend-ai/      # FastAPI — RAG, ChromaDB, DeepSeek API
 ```
 
-**¿Por qué separar el backend en dos servicios?**
-`backend-core` (NestJS) se encarga de todo lo transaccional: autenticación, usuarios, roles y persistencia. `backend-ai` (FastAPI) es un microservicio especializado en el pipeline de IA (embeddings, retrieval, generación), aislado para poder escalarlo o reemplazarlo sin tocar el resto del sistema.
+¿Por qué separar el backend en dos servicios? `backend-core` (NestJS) se encarga de todo lo transaccional: autenticación, usuarios, roles y persistencia. `backend-ai` (FastAPI) es un microservicio especializado en el pipeline de IA (embeddings, retrieval, generación), aislado para poder escalarlo o reemplazarlo sin tocar el resto del sistema.
 
-## 🛠️ Stack técnico
+## Stack técnico
 
 | Capa | Tecnología |
 |---|---|
@@ -41,13 +40,13 @@ bran.ai v2/
 | Gestor de paquetes | pnpm (workspace) |
 | Entorno Python | uv |
 
-## 🚀 Cómo correrlo localmente
+## Cómo correrlo localmente
 
 ### Requisitos previos
 - Node.js 20+
 - pnpm
-- Python 3.11+ y [uv](https://github.com/astral-sh/uv)
-- Una API key de [DeepSeek](https://platform.deepseek.com/)
+- Python 3.11+ y uv (https://github.com/astral-sh/uv)
+- Una API key de DeepSeek (https://platform.deepseek.com/)
 
 ### Instalación
 
@@ -88,26 +87,26 @@ cd apps/frontend
 pnpm run dev
 ```
 
-## 📸 Capturas
+## Capturas
 
-_(Agregar screenshots del dashboard, el chat, o un GIF corto del flujo de uso)_
+(Agregar screenshots del dashboard, el chat, o un GIF corto del flujo de uso)
 
-## 📌 Estado del proyecto
+## Estado del proyecto
 
 Proyecto en desarrollo activo. Próximas mejoras planeadas:
-- [ ] Tests automatizados (backend-core y backend-ai)
-- [ ] Dockerización completa del stack
-- [ ] Panel de analíticas de uso por organización
+- Tests automatizados (backend-core y backend-ai)
+- Dockerización completa del stack
+- Panel de analíticas de uso por organización
 
-## 👤 Autor
+## Autor
 
-**Carlos Morales Sandoval**
+Carlos Morales Sandoval
 Desarrollador Backend Jr · Python & Node.js · Sistemas RAG / IA aplicada
 
-- Portafolio: [cmorales.dev](https://cmorales.dev)
-- GitHub: [@carlosmorales-dev-mx](https://github.com/carlosmorales-dev-mx)
+- Portafolio: cmorales.dev
+- GitHub: https://github.com/carlosmorales-dev-mx
 - Email: carlosmorales.dev.mx@gmail.com
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto es de uso personal/portafolio. Si quieres usar parte del código, contáctame primero.
