@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bran.ai</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"
+        integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L"
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"
+        integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm"
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"
+        integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y"
+        crossorigin="anonymous"></script>
+    <template id="__bundler_thumbnail" data-bg-color="#b91c3a">
+        <svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+            <rect width="120" height="80" fill="#b91c3a" />
+            <polygon points="60,18 72,25 72,39 60,46 48,39 48,25" fill="white" opacity="0.2" />
+            <polygon points="60,26 68,31 68,39 60,44 52,39 52,31" fill="white" opacity="0.5" />
+            <rect x="20" y="54" width="30" height="4" rx="2" fill="white" opacity="0.4" />
+            <rect x="20" y="62" width="20" height="3" rx="1.5" fill="white" opacity="0.25" />
+            <rect x="70" y="54" width="30" height="4" rx="2" fill="white" opacity="0.4" />
+            <rect x="70" y="62" width="20" height="3" rx="1.5" fill="white" opacity="0.25" />
+        </svg>
+    </template>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html,
+        body,
+        #root {
+            height: 100%;
+            width: 100%;
+            overflow: hidden
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: #f2f4fb;
+            color: #1a1d35;
+            -webkit-font-smoothing: antialiased
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d0d6f0;
+            border-radius: 3px
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-5px)
+            }
+        }
+
+        @keyframes progress {
+            0% {
+                width: 15%
+            }
+
+            50% {
+                width: 75%
+            }
+
+            100% {
+                width: 15%
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-8px)
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0
+            }
+
+            100% {
+                background-position: 200% 0
+            }
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #9ba3bf
+        }
+
+        input:focus,
+        textarea:focus {
+            border-color: rgba(185, 28, 58, 0.4) !important;
+            box-shadow: 0 0 0 3px rgba(185, 28, 58, 0.08) !important;
+            outline: none
+        }
+
+        select option {
+            background: #fff
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // ── TOKENS ────────────────────────────────────────────────────────────────────
+        const C = {
+            bg: '#f2f4fb', surface: '#ffffff', card: '#ffffff', cardAlt: '#f7f8fe',
+            border: '#e4e8f5', borderHi: '#c8d0ec',
+            crimson: '#b91c3a', crimsonMid: '#dc2d50', crimsonLight: '#f43f5e',
+            crimsonDim: 'rgba(185,28,58,0.08)', crimsonGlow: 'rgba(185,28,58,0.18)',
+            blue: '#2d5be3', blueMid: '#4169e8',
+            blueDim: 'rgba(45,91,227,0.08)', blueGlow: 'rgba(45,91,227,0.14)',
+            yellow: '#c97a06', yellowDim: 'rgba(201,122,6,0.10)',
+            green: '#16955a', greenDim: 'rgba(22,149,90,0.09)',
+            tx: '#1a1d35', txS: '#5a6180', txM: '#9ba3bf',
+            mono: "'DM Mono',monospace",
+            shadow: '0 1px 3px rgba(26,29,53,0.07),0 4px 16px rgba(26,29,53,0.05)',
+            shadowMd: '0 4px 24px rgba(26,29,53,0.10),0 1px 4px rgba(26,29,53,0.06)',
+            shadowLg: '0 12px 48px rgba(26,29,53,0.14),0 2px 8px rgba(26,29,53,0.08)',
+        };
+
+        // ── SHARED ────────────────────────────────────────────────────────────────────
+        const IS = {
+            background: C.surface, border: `1px solid ${C.border}`, borderRadius: 9,
+            padding: '11px 14px', color: C.tx, fontSize: 13, fontFamily: 'Space Grotesk',
+            outline: 'none', width: '100%', transition: 'border-color 0.2s,box-shadow 0.2s',
+        };
+
+        function Spinner({ size = 16, color = C.crimson }) {
+            return <svg width={size} height={size} viewBox="0 0 16 16" fill="none"
+                style={{ animation: 'spin 0.8s linear infinite', display: 'block', flexShrink: 0 }}>
+                <circle cx="8" cy="8" r="6" stroke="#e0e4f0" strokeWidth="2" />
+                <path d="M8 2A6 6 0 0114 8" stroke={color} strokeWidth="2" strokeLinecap="round" />
+            </svg>;
+        }
+
+        function Logo({ white = false, size = 1 }) {
+            const textColor = white ? '#fff' : C.tx;
+            const dotColor = white ? 'rgba(255,255,255,0.7)' : C.crimson;
+            return <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                <div style={{
+                    width: 32 * size, height: 32 * size, borderRadius: 9 * size, background: C.crimson,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: `0 4px 16px ${C.crimsonGlow}`
+                }}>
+                    <svg width={15 * size} height={15 * size} viewBox="0 0 14 14" fill="none">
+                        <path d="M7 1L12 4V10L7 13L2 10V4L7 1Z" fill="white" opacity="0.95" />
+                        <path d="M7 5L9.5 6.5V9.5L7 11L4.5 9.5V6.5L7 5Z" fill={C.crimson} />
+                    </svg>
+                </div>
+                <span style={{ fontSize: 17 * size, fontWeight: 700, color: textColor, letterSpacing: '-0.02em' }}>
+                    bran<span style={{ color: dotColor }}>.ai</span>
+                </span>
+            </div>;
+        }
+
+        function Badge({ color, label, dot = true }) {
+            return <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                background: color + '18', color, fontSize: 11, fontWeight: 600,
+                borderRadius: 6, padding: '3px 9px', fontFamily: C.mono
+            }}>
+                {dot && <span style={{
+                    width: 5, height: 5, borderRadius: '50%', background: color,
+                    boxShadow: `0 0 5px ${color}80`
+                }} />}
+                {label}
+            </span>;
+        }
+
+        // ── MOCK DATA ─────────────────────────────────────────────────────────────────
+        const SESSIONS = [
+            { id: 's1', title: 'Dieta para diabetes tipo 2', project: 'Vanessa Nutrióloga', ts: '14:31', tokens: 2840, cost: 0.0031, msgs: 8 },
+            { id: 's2', title: 'Cotización salón 200 personas', project: 'Salón Eventos GDL', ts: '13:55', tokens: 1420, cost: 0.0015, msgs: 5 },
+            { id: 's3', title: 'Propiedades Zona Diamante', project: 'Inmobiliaria Mar Azul', ts: '12:10', tokens: 3200, cost: 0.0035, msgs: 11 },
+            { id: 's4', title: 'Limpieza dental preventiva', project: 'Clínica Dental CDMX', ts: '11:30', tokens: 980, cost: 0.0010, msgs: 4 },
+            { id: 's5', title: 'Tallas Nike Air Max', project: 'E-commerce Shoes MX', ts: '10:45', tokens: 650, cost: 0.0007, msgs: 3 },
+            { id: 's6', title: 'Plan alimentación semanal', project: 'Vanessa Nutrióloga', ts: 'Ayer', tokens: 4100, cost: 0.0044, msgs: 14 },
+        ];
+        const DOCS = [
+            { id: 'd1', name: 'Manual Nutrición Clínica.pdf', size: '4.2 MB', chunks: 342, status: 'indexed', ts: 'Apr 28', type: 'pdf', color: C.crimson },
+            { id: 'd2', name: 'Catálogo Salón 2026.pdf', size: '2.1 MB', chunks: 180, status: 'indexed', ts: 'Apr 27', type: 'pdf', color: C.blue },
+            { id: 'd3', name: 'Listado Propiedades Q2.xlsx', size: '890 KB', chunks: 97, status: 'indexed', ts: 'Apr 25', type: 'file', color: C.yellow },
+            { id: 'd4', name: 'Protocolos Dentales.pdf', size: '1.4 MB', chunks: 210, status: 'processing', ts: 'Apr 29', type: 'pdf', color: C.crimson },
+            { id: 'd5', name: 'https://vanessa-nutri.com/guia', size: '—', chunks: 0, status: 'processing', ts: 'Apr 29', type: 'url', color: C.blue },
+            { id: 'd6', name: 'intro-bran-ai-demo.mp4', size: '38 MB', chunks: 62, status: 'indexed', ts: 'Apr 22', type: 'video', color: C.crimsonMid },
+            { id: 'd7', name: 'foto-menu-nutricion.jpg', size: '1.2 MB', chunks: 12, status: 'indexed', ts: 'Apr 21', type: 'image', color: C.green },
+        ];
+        const CHAT_MSGS = [
+            { role: 'user', text: '¿Cuál es la dieta recomendada para un paciente con diabetes tipo 2 y sobrepeso?' },
+            { role: 'assistant', text: 'Para un paciente con diabetes tipo 2 y sobrepeso, el protocolo recomendado incluye una dieta hipocalórica moderada con control estricto de carbohidratos de índice glucémico alto. Se sugiere un déficit de 500–750 kcal/día y una distribución de macronutrientes de 40% CHO / 30% proteína / 30% grasa.' },
+            { role: 'user', text: '¿Qué alimentos deben evitarse completamente?' },
+            { role: 'assistant', text: 'Los alimentos a evitar incluyen: azúcares refinados, harinas blancas, bebidas azucaradas, frituras y alimentos ultraprocesados. El índice glucémico debe mantenerse por debajo de 55 en cada comida.' },
+            { role: 'user', text: '¿Cada cuánto tiempo debe revisarse el plan?' },
+            { role: 'assistant', text: 'El plan debe revisarse cada 4 semanas durante los primeros 3 meses, y posteriormente cada 8 semanas si los niveles de HbA1c están dentro del rango objetivo (< 7%).' },
+        ];
+        const days30 = Array.from({ length: 30 }, (_, i) => Math.round(80000 + i * 8000 + (Math.random() - 0.5) * 20000));
+        const costs30 = days30.map(t => +(t / 1000000 * 1.1).toFixed(4));
+
+        // ══════════════════════════════════════════════════════════════════════════════
+        // AUTH SCREENS
+        // ══════════════════════════════════════════════════════════════════════════════
+        function AuthScreen({ onLogin }) {
+            const [mode, setMode] = useState('login'); // 'login' | 'register'
+            const [role, setRole] = useState('admin');
+            const [form, setForm] = useState({ name: '', email: 'dev@bran.ai', password: '', confirm: '', org: '' });
+            const [loading, setLoading] = useState(false);
+            const [errors, setErrors] = useState({});
+            const [step, setStep] = useState(0); // for register multi-step feel
+
+            const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+            const validate = () => {
+                const e = {};
+                if (mode === 'register') {
+                    if (!form.name.trim()) e.name = 'Nombre requerido';
+                    if (!form.email.includes('@')) e.email = 'Email inválido';
+                    if (form.password.length < 6) e.password = 'Mínimo 6 caracteres';
+                    if (form.password !== form.confirm) e.confirm = 'Las contraseñas no coinciden';
+                } else {
+                    if (!form.email) e.email = 'Requerido';
+                    if (!form.password) e.password = 'Requerido';
+                }
+                setErrors(e);
+                return Object.keys(e).length === 0;
+            };
+
+            const submit = () => {
+                if (!validate()) return;
+                setLoading(true);
+                setTimeout(() => { setLoading(false); onLogin(role); }, 1200);
+            };
+
+            // Geometric decoration nodes
+            const nodes = [
+                { x: '12%', y: '18%', r: 5, o: 0.6 }, { x: '88%', y: '12%', r: 8, o: 0.4 },
+                { x: '6%', y: '72%', r: 4, o: 0.5 }, { x: '94%', y: '68%', r: 6, o: 0.35 },
+                { x: '50%', y: '8%', r: 3, o: 0.4 }, { x: '22%', y: '88%', r: 7, o: 0.3 },
+                { x: '78%', y: '90%', r: 4, o: 0.45 }, { x: '35%', y: '5%', r: 2, o: 0.5 },
+            ];
+
+            return (
+                <div style={{ height: '100vh', width: '100vw', display: 'flex', overflow: 'hidden', position: 'relative' }}>
+                    {/* Left panel — crimson brand */}
+                    <div style={{
+                        width: '45%', flexShrink: 0,
+                        background: `linear-gradient(150deg, #7f0a1e 0%, ${C.crimson} 45%, #e03258 100%)`,
+                        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                        padding: '48px 52px', position: 'relative', overflow: 'hidden',
+                    }}>
+                        {/* Geometric lines */}
+                        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.08 }} viewBox="0 0 600 900" preserveAspectRatio="xMidYMid slice">
+                            <line x1="0" y1="300" x2="600" y2="100" stroke="white" strokeWidth="1" />
+                            <line x1="0" y1="500" x2="600" y2="300" stroke="white" strokeWidth="1" />
+                            <line x1="0" y1="700" x2="600" y2="500" stroke="white" strokeWidth="1" />
+                            <line x1="200" y1="0" x2="200" y2="900" stroke="white" strokeWidth="0.5" />
+                            <line x1="400" y1="0" x2="400" y2="900" stroke="white" strokeWidth="0.5" />
+                            <circle cx="300" cy="450" r="200" stroke="white" strokeWidth="0.5" fill="none" />
+                            <circle cx="300" cy="450" r="120" stroke="white" strokeWidth="0.5" fill="none" />
+                            <circle cx="300" cy="450" r="40" stroke="white" strokeWidth="1" fill="none" />
+                        </svg>
+                        {/* Floating nodes */}
+                        {nodes.map((n, i) => <div key={i} style={{
+                            position: 'absolute', left: n.x, top: n.y,
+                            width: n.r * 2, height: n.r * 2, borderRadius: '50%',
+                            background: 'rgba(255,255,255,' + n.o + ')',
+                            animation: `float ${3 + i * 0.4}s ease-in-out ${i * 0.3}s infinite`,
+                        }} />)}
+
+                        {/* Top */}
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <Logo white size={1} />
+                        </div>
+
+                        {/* Center — hero copy */}
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <div style={{
+                                width: 64, height: 64, borderRadius: 16,
+                                background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)',
+                                border: '1px solid rgba(255,255,255,0.25)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                marginBottom: 28, boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                            }}>
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" fill="white" opacity="0.3" />
+                                    <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" stroke="white" strokeWidth="1.5" />
+                                    <path d="M12 8L16 10.5V15.5L12 18L8 15.5V10.5L12 8Z" fill="white" opacity="0.6" />
+                                </svg>
+                            </div>
+                            <h1 style={{ fontSize: 34, fontWeight: 700, color: '#fff', lineHeight: 1.18, letterSpacing: '-0.03em', marginBottom: 18 }}>
+                                El cerebro central<br />de tu IA empresarial.
+                            </h1>
+                            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.72)', lineHeight: 1.75, maxWidth: 340 }}>
+                                Plataforma BaaS con RAG, gestión de sesiones y monitoreo de consumo en tiempo real. Múltiples proyectos, un solo panel.
+                            </p>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 36 }}>
+                                {[
+                                    { icon: '🧠', text: 'RAG sobre PDF, video, imagen, URL y texto' },
+                                    { icon: '💬', text: 'Chat por sesión con trazabilidad completa' },
+                                    { icon: '📊', text: 'Dashboard de costos y latencia en vivo' },
+                                    { icon: '🔐', text: 'Roles: administrador y cliente separados' },
+                                ].map((f, i) => <div key={i} style={{
+                                    display: 'flex', alignItems: 'center', gap: 12,
+                                    animation: `fadeUp 0.4s ease ${0.1 + i * 0.08}s both`
+                                }}>
+                                    <span style={{ fontSize: 16, flexShrink: 0 }}>{f.icon}</span>
+                                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.78)', fontWeight: 400 }}>{f.text}</span>
+                                </div>)}
+                            </div>
+                        </div>
+
+                        {/* Bottom */}
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>v1.4.2 · Acapulco, MX · © 2026 Bran.ai</p>
+                        </div>
+                    </div>
+
+                    {/* Right panel — form */}
+                    <div style={{
+                        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: '#fafbff', padding: '40px', overflowY: 'auto'
+                    }}>
+                        <div style={{ width: '100%', maxWidth: 420, animation: 'fadeUp 0.35s ease both' }}>
+
+                            <h2 style={{ fontSize: 24, fontWeight: 700, color: C.tx, marginBottom: 6 }}>
+                                {mode === 'login' ? 'Bienvenido de nuevo 👋' : 'Crea tu cuenta'}
+                            </h2>
+                            <p style={{ fontSize: 13, color: C.txS, marginBottom: 28 }}>
+                                {mode === 'login' ? 'Ingresa tus credenciales para continuar' : 'Completa el formulario para empezar'}
+                            </p>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                {mode === 'register' && <Field label="Nombre completo" error={errors.name}>
+                                    <input value={form.name} onChange={e => set('name', e.target.value)}
+                                        placeholder="Ana García" style={{ ...IS }} />
+                                </Field>}
+
+                                <Field label="Correo electrónico" error={errors.email}>
+                                    <input value={form.email} onChange={e => set('email', e.target.value)}
+                                        placeholder="correo@empresa.com" style={{ ...IS }} />
+                                </Field>
+
+                                {mode === 'register' && <Field label="Organización" error={errors.org}>
+                                    <input value={form.org} onChange={e => set('org', e.target.value)}
+                                        placeholder="Mi Empresa S.A. de C.V." style={{ ...IS }} />
+                                </Field>}
+
+                                <Field label="Contraseña" error={errors.password}>
+                                    <input type="password" value={form.password} onChange={e => set('password', e.target.value)}
+                                        placeholder="••••••••" style={{ ...IS }}
+                                        onKeyDown={e => e.key === 'Enter' && !errors.confirm && submit()} />
+                                </Field>
+
+                                {mode === 'register' && <Field label="Confirmar contraseña" error={errors.confirm}>
+                                    <input type="password" value={form.confirm} onChange={e => set('confirm', e.target.value)}
+                                        placeholder="••••••••" style={{ ...IS }}
+                                        onKeyDown={e => e.key === 'Enter' && submit()} />
+                                </Field>}
+
+                                <button onClick={submit} disabled={loading} style={{
+                                    background: C.crimson, color: '#fff', border: 'none', borderRadius: 10,
+                                    padding: '13px', fontSize: 14, fontWeight: 700, cursor: loading ? 'default' : 'pointer',
+                                    fontFamily: 'Space Grotesk', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
+                                    boxShadow: `0 4px 18px ${C.crimsonGlow}`,
+                                    opacity: loading ? 0.8 : 1, transition: 'opacity 0.15s,transform 0.1s',
+                                    marginTop: 4,
+                                }}
+                                    onMouseEnter={e => { if (!loading) e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                                    onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+                                    {loading ? <><Spinner size={16} color="#fff" />
+                                        {mode === 'login' ? 'Autenticando…' : 'Creando cuenta…'}</>
+                                        : mode === 'login' ? 'Iniciar sesión →' : 'Crear cuenta →'}
+                                </button>
+
+                                {mode === 'login' && <div style={{ textAlign: 'center' }}>
+                                    <span style={{ fontSize: 12, color: C.txM }}>¿Olvidaste tu contraseña? </span>
+                                    <span style={{ fontSize: 12, color: C.crimson, cursor: 'pointer', fontWeight: 500 }}>Recuperar</span>
+                                </div>}
+
+                                {/* Toggle mode link */}
+                                <div style={{ textAlign: 'center', paddingTop: 4 }}>
+                                    {mode === 'login'
+                                        ? <p style={{ fontSize: 13, color: C.txS }}>
+                                            ¿Aún no tienes cuenta?{' '}
+                                            <span onClick={() => { setMode('register'); setErrors({}); }} style={{ color: C.crimson, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                                                Crear una
+                                            </span>
+                                        </p>
+                                        : <p style={{ fontSize: 13, color: C.txS }}>
+                                            ¿Ya tienes cuenta?{' '}
+                                            <span onClick={() => { setMode('login'); setErrors({}); }} style={{ color: C.crimson, fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                                                Iniciar sesión
+                                            </span>
+                                        </p>}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function Field({ label, error, children }) {
+            return <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 12, color: C.txS, fontWeight: 500 }}>{label}</label>
+                {children}
+                {error && <p style={{ fontSize: 11, color: C.crimson, fontWeight: 500 }}>{error}</p>}
+            </div>;
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════════
+        // ADMIN PANEL
+        // ══════════════════════════════════════════════════════════════════════════════
+        const NAV = [
+            {
+                id: 'dashboard', en: 'Dashboard', es: 'Panel',
+                icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="1" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.8" /><rect x="8.5" y="1" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.8" /><rect x="1" y="8.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.8" /><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1.2" fill="currentColor" opacity="0.3" /></svg>
+            },
+            {
+                id: 'kb', en: 'Knowledge Base', es: 'Base de Conocimiento',
+                icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 2h7l3 3v8a1 1 0 01-1 1h-9a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.3" fill="none" /><path d="M9.5 2v3h3M4.5 7h6M4.5 9.5h6M4.5 12h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" /></svg>
+            },
+            {
+                id: 'chat', en: 'Chat Sessions', es: 'Sesiones',
+                icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 2.5h11a1 1 0 011 1V10a1 1 0 01-1 1H8l-3 2.5V11H2a1 1 0 01-1-1V3.5a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.3" fill="none" /></svg>
+            },
+        ];
+
+        function AdminSidebar({ screen, setScreen, lang, setLang, onLogout }) {
+            const es = lang === 'es';
+            return <aside style={{
+                width: 220, flexShrink: 0, background: C.surface,
+                borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column'
+            }}>
+                <div style={{ padding: '18px 16px 14px', borderBottom: `1px solid ${C.border}` }}>
+                    <Logo />
+                    <div style={{
+                        marginTop: 10, padding: '6px 10px', background: C.bg, borderRadius: 7,
+                        display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer'
+                    }}>
+                        <div style={{
+                            width: 20, height: 20, borderRadius: 5,
+                            background: `linear-gradient(135deg,${C.blue},#6b8df5)`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#fff', fontWeight: 700
+                        }}>D</div>
+                        <span style={{ fontSize: 12, color: C.txS, fontWeight: 500 }}>Dev Workspace</span>
+                        <svg style={{ marginLeft: 'auto' }} width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M2.5 4.5l3 3 3-3" stroke={C.txM} strokeWidth="1.3" strokeLinecap="round" /></svg>
+                    </div>
+                </div>
+
+                <nav style={{ flex: 1, padding: '10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {NAV.map(n => {
+                        const active = screen === n.id;
+                        return <button key={n.id} onClick={() => setScreen(n.id)} style={{
+                            display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', borderRadius: 8,
+                            border: 'none', background: active ? C.crimsonDim : 'transparent',
+                            color: active ? C.crimson : C.txS, fontSize: 13, fontWeight: active ? 600 : 400,
+                            cursor: 'pointer', fontFamily: 'Space Grotesk', textAlign: 'left', width: '100%', transition: 'all 0.15s',
+                        }}
+                            onMouseEnter={e => { if (!active) { e.currentTarget.style.background = C.bg; e.currentTarget.style.color = C.tx; } }}
+                            onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = C.txS; } }}>
+                            <span style={{ color: active ? C.crimson : 'inherit', flexShrink: 0 }}>{n.icon}</span>
+                            {es ? n.es : n.en}
+                            {n.id === 'chat' && <span style={{
+                                marginLeft: 'auto', background: C.crimsonDim, color: C.crimson,
+                                fontSize: 9, fontFamily: C.mono, borderRadius: 4, padding: '1px 5px', fontWeight: 600
+                            }}>{SESSIONS.length}</span>}
+                            {n.id === 'kb' && <span style={{
+                                marginLeft: 'auto', background: C.blueDim, color: C.blue,
+                                fontSize: 9, fontFamily: C.mono, borderRadius: 4, padding: '1px 5px', fontWeight: 600
+                            }}>
+                                {DOCS.filter(d => d.status === 'indexed').length}</span>}
+                        </button>;
+                    })}
+                </nav>
+
+                <div style={{ padding: '10px', borderTop: `1px solid ${C.border}` }}>
+                    <div style={{ display: 'flex', background: C.bg, borderRadius: 7, padding: 3, marginBottom: 8 }}>
+                        {['en', 'es'].map(l => <button key={l} onClick={() => setLang(l)} style={{
+                            flex: 1, padding: '5px', border: 'none', borderRadius: 5,
+                            background: lang === l ? C.surface : 'transparent',
+                            color: lang === l ? C.tx : C.txM, fontSize: 12, fontWeight: lang === l ? 600 : 400,
+                            cursor: 'pointer', fontFamily: 'Space Grotesk', transition: 'all 0.15s',
+                            boxShadow: lang === l ? C.shadow : 'none',
+                        }}>{l.toUpperCase()}</button>)}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 8px 4px' }}>
+                        <div style={{
+                            width: 28, height: 28, borderRadius: '50%',
+                            background: `linear-gradient(135deg,${C.crimson},${C.blue})`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff'
+                        }}>D</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 500, color: C.tx }}>Dev Acapulco</div>
+                            <div style={{ fontSize: 10, color: C.txM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>dev@bran.ai · Admin</div>
+                        </div>
+                        <button onClick={onLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.txM, padding: 6, borderRadius: 6, transition: 'all 0.15s' }}
+                            onMouseEnter={e => { e.currentTarget.style.background = C.crimsonDim; e.currentTarget.style.color = C.crimson; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.txM; }}>
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2H2a1 1 0 00-1 1v8a1 1 0 001 1h3M10 10l3-3-3-3M13 7H5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        </button>
+                    </div>
+                </div>
+            </aside>;
+        }
+
+        function Topbar({ screen, lang }) {
+            const crumbs = { dashboard: 'Dashboard', kb: lang === 'es' ? 'Base de Conocimiento' : 'Knowledge Base', chat: lang === 'es' ? 'Sesiones' : 'Chat Sessions' };
+            return <header style={{
+                height: 50, flexShrink: 0, borderBottom: `1px solid ${C.border}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '0 28px', background: C.surface
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 12, color: C.txM }}>bran.ai</span>
+                    <span style={{ color: C.txM }}>/</span>
+                    <span style={{ fontSize: 12, color: C.tx, fontWeight: 600 }}>{crumbs[screen]}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    {[{ label: 'NestJS', color: C.green }, { label: 'FastAPI', color: C.blue }, { label: 'Gemini Flash', color: C.blue }, { label: 'Aiven', color: C.green }]
+                        .map(s => <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: s.color, boxShadow: `0 0 5px ${s.color}80` }} />
+                            <span style={{ fontSize: 11, color: C.txS, fontWeight: 500 }}>{s.label}</span>
+                        </div>)}
+                </div>
+            </header>;
+        }
+
+        // ── SPARKLINE / BAR ───────────────────────────────────────────────────────────
+        function Spark({ data, color, w = 80, h = 32 }) {
+            if (!data || data.length < 2) return null;
+            const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;
+            const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * (h - 4) - 2}`).join(' ');
+            const uid = color.replace('#', '');
+            return <svg width={w} height={h} style={{ display: 'block' }}>
+                <defs><linearGradient id={`sg${uid}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={color} stopOpacity="0.25" />
+                    <stop offset="100%" stopColor={color} stopOpacity="0" />
+                </linearGradient></defs>
+                <polygon points={`0,${h} ${pts} ${w},${h}`} fill={`url(#sg${uid})`} />
+                <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>;
+        }
+        function BarChart({ data, color, h = 100 }) {
+            const max = Math.max(...data);
+            return <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2.5, height: h }}>
+                {data.map((v, i) => <div key={i} style={{
+                    flex: 1, background: color, height: `${(v / max) * 100}%`,
+                    borderRadius: '3px 3px 0 0', opacity: 0.2 + (i / data.length) * 0.8
+                }} />)}
+            </div>;
+        }
+        function StatCard({ label, value, sub, color, sparkData }) {
+            const [h, setH] = useState(false);
+            return <div style={{
+                background: C.surface, border: `1px solid ${h ? color + '60' : C.border}`, borderRadius: 12,
+                padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 10,
+                boxShadow: h ? `0 4px 20px ${color}18` : C.shadow, transition: 'all 0.2s'
+            }}
+                onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: 11, color: C.txM, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 500 }}>{label}</span>
+                    {sparkData && <Spark data={sparkData} color={color} />}
+                </div>
+                <div style={{ fontSize: 26, fontWeight: 700, color: C.tx, letterSpacing: '-0.02em' }}>{value}</div>
+                <div style={{ fontSize: 12, color, fontWeight: 600 }}>{sub}</div>
+            </div>;
+        }
+
+        // ── DASHBOARD ─────────────────────────────────────────────────────────────────
+        function DashboardScreen({ lang }) {
+            const es = lang === 'es';
+            const totalTokens = days30.reduce((a, b) => a + b, 0);
+            const totalCost = costs30.reduce((a, b) => a + b, 0);
+            return <div style={{ padding: '28px 32px', overflowY: 'auto', height: '100%' }}>
+                <div style={{ marginBottom: 24 }}>
+                    <h1 style={{ fontSize: 21, fontWeight: 700, color: C.tx, marginBottom: 4 }}>{es ? 'Panel de Monitoreo' : 'Monitoring Dashboard'}</h1>
+                    <p style={{ fontSize: 13, color: C.txS }}>{es ? 'Últimos 30 días · tiempo real' : 'Last 30 days · live'}</p>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 22 }}>
+                    <StatCard label={es ? 'Tokens Totales' : 'Total Tokens'} value={`${(totalTokens / 1e6).toFixed(2)}M`} sub="↑ 22.4%" color={C.crimson} sparkData={days30} />
+                    <StatCard label={es ? 'Costo Total' : 'Total Cost'} value={`$${totalCost.toFixed(2)}`} sub="↑ 18.1%" color={C.yellow} sparkData={costs30} />
+                    <StatCard label={es ? 'Sesiones' : 'Sessions'} value={SESSIONS.length} sub="↑ 3 hoy" color={C.blue} sparkData={days30.map((_, i) => 3 + i * 0.5)} />
+                    <StatCard label="Latencia" value="468ms" sub="↓ 7.2%" color={C.green} sparkData={days30.map((_, i) => 600 - i * 4 + Math.random() * 50)} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 14, marginBottom: 22 }}>
+                    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: '20px 22px', boxShadow: C.shadow }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: C.tx }}>{es ? 'Consumo de Tokens / Día' : 'Token Consumption / Day'}</span>
+                            <span style={{ fontSize: 11, color: C.txM, fontFamily: C.mono }}>$0.27/1M in · $1.10/1M out</span>
+                        </div>
+                        <BarChart data={days30} color={C.crimson} h={100} />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+                            <span style={{ fontSize: 10, color: C.txM, fontFamily: C.mono }}>Apr 1</span>
+                            <span style={{ fontSize: 10, color: C.txM, fontFamily: C.mono }}>Apr 29</span>
+                        </div>
+                    </div>
+                    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: '20px 22px', boxShadow: C.shadow }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: C.tx, display: 'block', marginBottom: 16 }}>{es ? 'Costo por Chat' : 'Cost by Chat'}</span>
+                        {[...SESSIONS].sort((a, b) => b.cost - a.cost).map((s, i) => {
+                            const maxC = Math.max(...SESSIONS.map(x => x.cost));
+                            const cols = [C.crimson, C.crimsonMid, C.blue, C.yellow, C.green, C.txM];
+                            return <div key={s.id} style={{ marginBottom: 11 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                    <span style={{ fontSize: 11, color: C.tx, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 140 }}>{s.title}</span>
+                                    <span style={{ fontSize: 11, color: C.txS, fontFamily: C.mono, flexShrink: 0, marginLeft: 4 }}>${s.cost.toFixed(4)}</span>
+                                </div>
+                                <div style={{ height: 4, background: C.border, borderRadius: 2 }}>
+                                    <div style={{ height: '100%', width: `${(s.cost / maxC) * 100}%`, background: cols[i % cols.length], borderRadius: 2, transition: 'width 0.6s' }} />
+                                </div>
+                            </div>;
+                        })}
+                    </div>
+                </div>
+                <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden', boxShadow: C.shadow }}>
+                    <div style={{ padding: '14px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: C.cardAlt }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: C.tx }}>{es ? 'Sesiones Recientes' : 'Recent Sessions'}</span>
+                        <Badge color={C.crimson} label="LIVE" />
+                    </div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <thead><tr style={{ background: C.cardAlt, borderBottom: `1px solid ${C.border}` }}>
+                            {[es ? 'Sesión' : 'Session', 'Proyecto', 'Tokens In', 'Tokens Out', es ? 'Costo' : 'Cost', es ? 'Hora' : 'Time'].map(h => <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 10, color: C.txM, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase' }}>{h}</th>)}
+                        </tr></thead>
+                        <tbody>{SESSIONS.map((s, i) => <tr key={s.id} style={{ borderBottom: i < SESSIONS.length - 1 ? `1px solid ${C.border}` : 'none', transition: 'background 0.1s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            <td style={{ padding: '11px 16px', fontSize: 12, color: C.tx, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 500 }}>{s.title}</td>
+                            <td style={{ padding: '11px 16px', fontSize: 12, color: C.txS }}>{s.project}</td>
+                            <td style={{ padding: '11px 16px', fontFamily: C.mono, fontSize: 12, color: C.txS }}>{Math.round(s.tokens * 0.4).toLocaleString()}</td>
+                            <td style={{ padding: '11px 16px', fontFamily: C.mono, fontSize: 12, color: C.txS }}>{Math.round(s.tokens * 0.6).toLocaleString()}</td>
+                            <td style={{ padding: '11px 16px', fontFamily: C.mono, fontSize: 12, color: C.yellow, fontWeight: 600 }}>${s.cost.toFixed(4)}</td>
+                            <td style={{ padding: '11px 16px', fontSize: 11, color: C.txM }}>{s.ts}</td>
+                        </tr>)}</tbody>
+                    </table>
+                </div>
+            </div>;
+        }
+
+        // ── KB SCREEN ─────────────────────────────────────────────────────────────────
+        function FileTypeIcon({ type, color }) {
+            const paths = {
+                pdf: <><path d="M3.5 2h8l4 4v10a1 1 0 01-1 1h-11a1 1 0 01-1-1V3a1 1 0 011-1z" stroke={color} strokeWidth="1.3" fill="none" /><path d="M11.5 2v4h4" stroke={color} strokeWidth="1.3" /><path d="M5 9h2a1 1 0 010 2H5V7h2a1 1 0 010 2" stroke={color} strokeWidth="1" strokeLinecap="round" /></>,
+                video: <><rect x="1" y="3" width="12" height="10" rx="1.5" stroke={color} strokeWidth="1.3" fill="none" /><path d="M13 7l3-2v6l-3-2V7z" stroke={color} strokeWidth="1.3" strokeLinejoin="round" fill="none" /></>,
+                image: <><rect x="1" y="2" width="14" height="12" rx="1.5" stroke={color} strokeWidth="1.3" fill="none" /><circle cx="5" cy="6" r="1.5" fill={color} /><path d="M1 11l4-4 3 3 2-2 4 4" stroke={color} strokeWidth="1.3" strokeLinecap="round" /></>,
+                url: <><circle cx="8" cy="8" r="6.5" stroke={color} strokeWidth="1.3" /><path d="M8 1.5C8 1.5 5.5 4 5.5 8s2.5 6.5 2.5 6.5M8 1.5C8 1.5 10.5 4 10.5 8S8 14.5 8 14.5M1.5 8h13" stroke={color} strokeWidth="1.3" strokeLinecap="round" /></>,
+                text: <><rect x="2" y="1" width="12" height="14" rx="1.5" stroke={color} strokeWidth="1.3" fill="none" /><path d="M5 5h6M5 8h6M5 11h4" stroke={color} strokeWidth="1.3" strokeLinecap="round" /></>,
+                file: <><path d="M3.5 2h8l4 4v10a1 1 0 01-1 1h-11a1 1 0 01-1-1V3a1 1 0 011-1z" stroke={color} strokeWidth="1.3" fill="none" /><path d="M11.5 2v4h4" stroke={color} strokeWidth="1.3" /></>,
+            };
+            return <svg width="18" height="18" viewBox="0 0 16 16" fill="none">{paths[type] || paths.file}</svg>;
+        }
+
+        function KBScreen({ lang }) {
+            const es = lang === 'es';
+            const [docs, setDocs] = useState(DOCS);
+            const [drag, setDrag] = useState(false);
+            const [tab, setTab] = useState('upload');
+            const [urlInput, setUrlInput] = useState('');
+            const [textInput, setTextInput] = useState('');
+            const [textName, setTextName] = useState('');
+            const [search, setSearch] = useState('');
+            const [typeFilter, setTypeFilter] = useState('all');
+            const fileRef = useRef();
+
+            const addDoc = (name, size, type, color) => {
+                const tmp = { id: `d${Date.now()}`, name, size, chunks: 0, status: 'processing', ts: 'Ahora', type, color };
+                setDocs(d => [tmp, ...d]);
+                setTimeout(() => setDocs(d => d.map(x => x.id === tmp.id ? { ...x, status: 'indexed', chunks: Math.floor(Math.random() * 200 + 40) } : x)), 2400);
+            };
+            const handleFile = f => {
+                if (!f) return;
+                const ext = f.name.split('.').pop().toLowerCase();
+                const type = ext === 'pdf' ? 'pdf' : ['mp4', 'mov', 'avi', 'webm'].includes(ext) ? 'video' : ['jpg', 'jpeg', 'png', 'webp'].includes(ext) ? 'image' : 'file';
+                const colorMap = { pdf: C.crimson, video: C.crimsonMid, image: C.blue, file: C.txS };
+                addDoc(f.name, `${(f.size / 1024 / 1024).toFixed(1)} MB`, type, colorMap[type] || C.txS);
+            };
+            const filtered = docs.filter(d => (!search || d.name.toLowerCase().includes(search.toLowerCase())) && (typeFilter === 'all' || d.type === typeFilter));
+            const totalChunks = docs.filter(d => d.status === 'indexed').reduce((a, d) => a + d.chunks, 0);
+
+            return <div style={{ padding: '28px 32px', overflowY: 'auto', height: '100%' }}>
+                <div style={{ marginBottom: 24 }}>
+                    <h1 style={{ fontSize: 21, fontWeight: 700, color: C.tx, marginBottom: 4 }}>{es ? 'Base de Conocimiento' : 'Knowledge Base'}</h1>
+                    <p style={{ fontSize: 13, color: C.txS }}>{docs.filter(d => d.status === 'indexed').length} {es ? 'fuentes indexadas' : 'indexed'} · {totalChunks.toLocaleString()} chunks · RAG activo</p>
+                </div>
+
+                {/* Upload panel */}
+                <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, marginBottom: 20, overflow: 'hidden', boxShadow: C.shadow }}>
+                    <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, background: C.cardAlt }}>
+                        {[{ id: 'upload', label: es ? 'Archivo' : 'File', icon: '📎' }, { id: 'url', label: 'URL', icon: '🔗' }, { id: 'text', label: es ? 'Texto' : 'Text', icon: '✏️' }].map(t => (
+                            <button key={t.id} onClick={() => setTab(t.id)} style={{
+                                padding: '11px 18px', border: 'none', background: 'transparent',
+                                borderBottom: `2px solid ${tab === t.id ? C.crimson : 'transparent'}`,
+                                color: tab === t.id ? C.crimson : C.txS, fontSize: 13, fontWeight: tab === t.id ? 600 : 400,
+                                cursor: 'pointer', fontFamily: 'Space Grotesk', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s',
+                            }}><span>{t.icon}</span>{t.label}</button>
+                        ))}
+                    </div>
+                    <div style={{ padding: '20px 22px' }}>
+                        {tab === 'upload' && <>
+                            <input ref={fileRef} type="file" style={{ display: 'none' }} accept=".pdf,.docx,.xlsx,.csv,.txt,.mp4,.mov,.jpg,.jpeg,.png,.webp" onChange={e => handleFile(e.target.files[0])} />
+                            <div onDragOver={e => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)}
+                                onDrop={e => { e.preventDefault(); setDrag(false); handleFile(e.dataTransfer.files[0]); }}
+                                onClick={() => fileRef.current.click()} style={{
+                                    border: `2px dashed ${drag ? C.crimson : C.border}`, borderRadius: 10,
+                                    padding: '30px', textAlign: 'center', cursor: 'pointer',
+                                    background: drag ? C.crimsonDim : C.bg, transition: 'all 0.2s',
+                                }}>
+                                <div style={{ fontSize: 28, marginBottom: 10 }}>{drag ? '📂' : '📁'}</div>
+                                <p style={{ fontSize: 13, color: drag ? C.crimson : C.txS, fontWeight: 500 }}>{es ? 'Arrastra o haz clic para subir' : 'Drag or click to upload'}</p>
+                                <p style={{ fontSize: 11, color: C.txM, marginTop: 6 }}>PDF · DOCX · XLSX · CSV · TXT · MP4 · MOV · JPG · PNG · max 100MB</p>
+                                <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 14, flexWrap: 'wrap' }}>
+                                    {[{ c: C.crimson, l: 'PDF' }, { c: C.crimsonMid, l: 'Video' }, { c: C.blue, l: 'Imagen' }, { c: C.yellow, l: 'XLS/CSV' }, { c: C.green, l: 'DOCX/TXT' }].map(x => (
+                                        <span key={x.l} style={{ fontSize: 10, color: x.c, background: x.c + '15', borderRadius: 5, padding: '2px 8px', fontWeight: 600 }}>{x.l}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        </>}
+                        {tab === 'url' && <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <p style={{ fontSize: 12, color: C.txS }}>{es ? 'Indexa el contenido de cualquier URL pública' : 'Index any public URL'}</p>
+                            <div style={{ display: 'flex', gap: 10 }}>
+                                <input value={urlInput} onChange={e => setUrlInput(e.target.value)} placeholder="https://ejemplo.com/docs" style={{ ...IS, flex: 1 }} />
+                                <button onClick={() => { if (!urlInput.trim()) return; addDoc(urlInput.trim(), '—', 'url', C.blue); setUrlInput(''); }} style={{
+                                    background: C.crimson, color: '#fff', border: 'none', borderRadius: 9, padding: '0 18px',
+                                    fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Space Grotesk', whiteSpace: 'nowrap',
+                                }}>{es ? 'Indexar' : 'Index'}</button>
+                            </div>
+                        </div>}
+                        {tab === 'text' && <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <p style={{ fontSize: 12, color: C.txS }}>{es ? 'Pega texto directamente' : 'Paste text directly'}</p>
+                            <input value={textName} onChange={e => setTextName(e.target.value)} placeholder={es ? 'Nombre del documento' : 'Document name'} style={{ ...IS }} />
+                            <textarea value={textInput} onChange={e => setTextInput(e.target.value)} placeholder={es ? 'Pega el contenido aquí…' : 'Paste content here…'} rows={4} style={{ ...IS, resize: 'vertical', minHeight: 88 }} />
+                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <button onClick={() => { if (!textInput.trim()) return; addDoc(textName || 'texto.txt', `${textInput.length} chars`, 'text', C.green); setTextInput(''); setTextName(''); }} style={{
+                                    background: C.crimson, color: '#fff', border: 'none', borderRadius: 9, padding: '9px 20px',
+                                    fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Space Grotesk',
+                                }}>{es ? 'Guardar e indexar' : 'Save & index'}</button>
+                            </div>
+                        </div>}
+                    </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, marginBottom: 14, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder={es ? 'Buscar…' : 'Search…'} style={{ ...IS, width: 200, flex: '0 0 auto' }} />
+                    {['all', 'pdf', 'video', 'image', 'url', 'text', 'file'].map(t => (
+                        <button key={t} onClick={() => setTypeFilter(t)} style={{
+                            padding: '5px 12px', borderRadius: 20, border: `1px solid ${typeFilter === t ? C.crimson : C.border}`,
+                            background: typeFilter === t ? C.crimsonDim : C.surface,
+                            color: typeFilter === t ? C.crimson : C.txS, fontSize: 12, fontWeight: typeFilter === t ? 600 : 400,
+                            cursor: 'pointer', fontFamily: 'Space Grotesk', transition: 'all 0.15s',
+                        }}>{t === 'all' ? 'Todos' : t.toUpperCase()}</button>
+                    ))}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {filtered.map(d => <div key={d.id} style={{
+                        background: C.surface, border: `1px solid ${d.status === 'processing' ? d.color + '50' : C.border}`,
+                        borderRadius: 10, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12, boxShadow: C.shadow,
+                    }}>
+                        <div style={{
+                            width: 36, height: 36, borderRadius: 8, background: d.color + '14', border: `1px solid ${d.color}30`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                        }}>
+                            <FileTypeIcon type={d.type} color={d.color} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 500, color: C.tx, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.name}</div>
+                            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                                <span style={{ fontSize: 10, color: d.color, background: d.color + '14', padding: '1px 6px', borderRadius: 4, fontWeight: 600, textTransform: 'uppercase' }}>{d.type}</span>
+                                <span style={{ fontSize: 11, color: C.txM, fontFamily: C.mono }}>{d.size}</span>
+                                <span style={{ fontSize: 11, color: C.txM }}>{d.ts}</span>
+                            </div>
+                            {d.status === 'processing' && <div style={{ height: 2, background: C.border, borderRadius: 1, marginTop: 8 }}>
+                                <div style={{ height: '100%', width: '60%', background: d.color, borderRadius: 1, animation: 'progress 1.8s ease-in-out infinite' }} />
+                            </div>}
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0, minWidth: 56 }}>
+                            {d.status === 'indexed' ? <><div style={{ fontSize: 15, fontWeight: 700, color: C.tx, fontFamily: C.mono }}>{d.chunks}</div><div style={{ fontSize: 10, color: C.txM }}>chunks</div></> : <div style={{ display: 'flex', justifyContent: 'flex-end' }}><Spinner size={18} color={d.color} /></div>}
+                        </div>
+                        <div style={{ flexShrink: 0 }}><Badge color={d.status === 'indexed' ? C.green : C.yellow} label={d.status === 'indexed' ? 'indexed' : 'processing'} /></div>
+                        <button onClick={() => setDocs(ds => ds.filter(x => x.id !== d.id))} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.txM, padding: 6, borderRadius: 6, transition: 'all 0.15s', flexShrink: 0 }}
+                            onMouseEnter={e => { e.currentTarget.style.background = C.crimsonDim; e.currentTarget.style.color = C.crimson; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = C.txM; }}>
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 3.5h10M5.5 3.5V2.5a.5.5 0 01.5-.5h2a.5.5 0 01.5.5v1M11 3.5l-.7 8a1 1 0 01-1 .9H4.7a1 1 0 01-1-.9l-.7-8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" /></svg>
+                        </button>
+                    </div>)}
+                </div>
+            </div>;
+        }
+
+        // ── ADMIN CHAT ────────────────────────────────────────────────────────────────
+        function AdminChatScreen({ lang }) {
+            const es = lang === 'es';
+            const [sessions, setSessions] = useState(SESSIONS);
+            const [activeId, setActiveId] = useState('s1');
+            const [messages, setMessages] = useState(CHAT_MSGS);
+            const [input, setInput] = useState('');
+            const [typing, setTyping] = useState(false);
+            const bottomRef = useRef();
+            const active = sessions.find(s => s.id === activeId);
+
+            useEffect(() => {
+                const el = bottomRef.current?.parentElement;
+                if (el) el.scrollTop = el.scrollHeight;
+            }, [messages, typing]);
+
+            const send = () => {
+                if (!input.trim() || typing) return;
+                const txt = input; setInput('');
+                setMessages(m => [...m, { role: 'user', text: txt }]);
+                setTyping(true);
+                setTimeout(() => {
+                    setMessages(m => [...m, { role: 'assistant', text: es ? 'Basado en los documentos indexados en tu base de conocimiento, aquí tienes una respuesta fundamentada con el contenido más relevante encontrado.' : 'Based on your indexed knowledge base, here is a grounded answer using the most relevant content found.' }]);
+                    setTyping(false);
+                    setSessions(ss => ss.map(s => s.id === activeId ? { ...s, msgs: s.msgs + 2, tokens: s.tokens + Math.floor(Math.random() * 500 + 200) } : s));
+                }, 1800);
+            };
+
+            return <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+                {/* Sessions list */}
+                <div style={{ width: 256, flexShrink: 0, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', background: C.surface }}>
+                    <div style={{ padding: '12px', borderBottom: `1px solid ${C.border}`, background: C.cardAlt }}>
+                        <button onClick={() => { const id = `s${Date.now()}`; setSessions(ss => [{ id, title: es ? 'Nueva sesión' : 'New session', project: 'Vanessa Nutrióloga', ts: 'Ahora', tokens: 0, cost: 0, msgs: 0 }, ...ss]); setActiveId(id); setMessages([]); }} style={{
+                            width: '100%', background: C.crimson, color: '#fff', border: 'none', borderRadius: 8,
+                            padding: '8px', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Space Grotesk',
+                            boxShadow: `0 2px 10px ${C.crimsonGlow}`,
+                        }}>+ {es ? 'Nueva sesión' : 'New session'}</button>
+                    </div>
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+                        {sessions.map(s => {
+                            const act = s.id === activeId;
+                            return <div key={s.id} onClick={() => { setActiveId(s.id); if (s.id === 's1') setMessages(CHAT_MSGS); else setMessages([]); }} style={{
+                                padding: '10px 12px', borderRadius: 8, marginBottom: 4, cursor: 'pointer',
+                                background: act ? C.crimsonDim : C.surface, border: `1px solid ${act ? C.crimson + '40' : C.border}`, transition: 'all 0.15s',
+                            }}
+                                onMouseEnter={e => { if (!act) e.currentTarget.style.background = C.bg; }}
+                                onMouseLeave={e => { if (!act) e.currentTarget.style.background = C.surface; }}>
+                                <div style={{ fontSize: 12, fontWeight: act ? 600 : 400, color: act ? C.tx : C.txS, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.title}</div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontSize: 10, color: C.txM, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 120 }}>{s.project}</span>
+                                    <span style={{ fontSize: 10, color: C.txM, flexShrink: 0 }}>{s.ts}</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: 8, marginTop: 5 }}>
+                                    <span style={{ fontSize: 10, color: C.txM, fontFamily: C.mono }}>{s.msgs} msgs</span>
+                                    <span style={{ fontSize: 10, color: C.txM, fontFamily: C.mono }}>{(s.tokens / 1000).toFixed(1)}k tok</span>
+                                </div>
+                            </div>;
+                        })}
+                    </div>
+                </div>
+
+                {/* Chat */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', background: C.bg }}>
+                    <div style={{ padding: '12px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: C.surface, boxShadow: C.shadow, flexShrink: 0 }}>
+                        <div>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: C.tx }}>{active?.title}</div>
+                            <div style={{ fontSize: 11, color: C.txS, marginTop: 2 }}>{active?.project} · gemini-2.5-flash-preview · RAG</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <Badge color={C.crimson} label="RAG activo" />
+                            <span style={{ fontSize: 11, color: C.txM, fontFamily: C.mono, background: C.border, padding: '3px 8px', borderRadius: 6 }}>{active?.tokens.toLocaleString()} tok</span>
+                        </div>
+                    </div>
+                    <ChatMessages messages={messages} typing={typing} bottomRef={bottomRef} lang={lang} />
+                    <ChatInput input={input} setInput={setInput} send={send} typing={typing} lang={lang} docsCount={DOCS.filter(d => d.status === 'indexed').length} />
+                </div>
+            </div>;
+        }
+
+        // ── SHARED CHAT COMPONENTS ────────────────────────────────────────────────────
+        function ChatMessages({ messages, typing, bottomRef, lang }) {
+            const es = lang === 'es';
+            return <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+                {messages.length === 0 && <div style={{ textAlign: 'center', marginTop: 60 }}>
+                    <div style={{
+                        width: 52, height: 52, borderRadius: 13, background: C.crimsonDim, border: `1px solid ${C.crimson}30`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', boxShadow: `0 4px 16px ${C.crimsonGlow}`
+                    }}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" fill={C.crimson} opacity="0.25" /><path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" stroke={C.crimson} strokeWidth="1.5" /></svg>
+                    </div>
+                    <p style={{ fontSize: 14, color: C.tx, fontWeight: 500 }}>{es ? 'Inicia la conversación' : 'Start the conversation'}</p>
+                    <p style={{ fontSize: 12, color: C.txM, marginTop: 6 }}>{es ? 'Tus preguntas serán respondidas con los documentos indexados' : 'Your questions will be answered using indexed documents'}</p>
+                </div>}
+                {messages.map((m, i) => <div key={i} style={{ display: 'flex', gap: 10, flexDirection: m.role === 'user' ? 'row-reverse' : 'row' }}>
+                    <div style={{
+                        width: 30, height: 30, borderRadius: '50%', flexShrink: 0, marginTop: 2,
+                        background: m.role === 'user' ? `linear-gradient(135deg,${C.blue},#6b8df5)` : `linear-gradient(135deg,${C.crimson},${C.crimsonMid})`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff',
+                        boxShadow: m.role === 'assistant' ? `0 2px 8px ${C.crimsonGlow}` : `0 2px 8px ${C.blueGlow}`
+                    }}>
+                        {m.role === 'user' ? 'D' : 'B'}
+                    </div>
+                    <div style={{ maxWidth: '72%' }}>
+                        <div style={{
+                            background: m.role === 'user' ? C.blue : C.surface,
+                            border: `1px solid ${m.role === 'user' ? C.blue + '20' : C.border}`,
+                            borderRadius: m.role === 'user' ? '12px 4px 12px 12px' : '4px 12px 12px 12px',
+                            padding: '12px 16px', boxShadow: C.shadow,
+                        }}>
+                            <p style={{ fontSize: 13, color: m.role === 'user' ? '#fff' : C.tx, lineHeight: 1.65, textWrap: 'pretty' }}>{m.text}</p>
+                        </div>
+                    </div>
+                </div>)}
+                {typing && <div style={{ display: 'flex', gap: 10 }}>
+                    <div style={{
+                        width: 30, height: 30, borderRadius: '50%', background: `linear-gradient(135deg,${C.crimson},${C.crimsonMid})`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff'
+                    }}>B</div>
+                    <div style={{
+                        background: C.surface, border: `1px solid ${C.border}`, borderRadius: '4px 12px 12px 12px',
+                        padding: '14px 16px', display: 'flex', gap: 5, alignItems: 'center', boxShadow: C.shadow
+                    }}>
+                        {[0, 1, 2].map(i => <span key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: C.crimson, animation: `bounce 1s ${i * 0.2}s infinite` }} />)}
+                    </div>
+                </div>}
+                <div ref={bottomRef} />
+            </div>;
+        }
+
+        function ChatInput({ input, setInput, send, typing, lang, docsCount }) {
+            const es = lang === 'es';
+            return <div style={{ padding: '14px 24px', borderTop: `1px solid ${C.border}`, background: C.surface, flexShrink: 0 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+                    <textarea value={input} onChange={e => setInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+                        placeholder={es ? 'Escribe tu pregunta… (Enter envía)' : 'Type your question… (Enter sends)'}
+                        rows={1} style={{ ...IS, resize: 'none', flex: 1, minHeight: 44, maxHeight: 130, lineHeight: 1.55, padding: '11px 14px' }} />
+                    <button onClick={send} disabled={!input.trim() || typing} style={{
+                        width: 44, height: 44, borderRadius: 10, border: 'none', flexShrink: 0,
+                        background: input.trim() && !typing ? C.crimson : C.border,
+                        cursor: input.trim() && !typing ? 'pointer' : 'default',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'background 0.2s,box-shadow 0.2s',
+                        boxShadow: input.trim() && !typing ? `0 2px 10px ${C.crimsonGlow}` : 'none',
+                    }}>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 2L7 9M14 2L9.5 14 7 9 2 6.5 14 2z" stroke={input.trim() && !typing ? '#fff' : C.txM} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    </button>
+                </div>
+                <p style={{ fontSize: 10, color: C.txM, marginTop: 6, display: 'flex', gap: 5, alignItems: 'center' }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: C.crimson, display: 'inline-block', boxShadow: `0 0 5px ${C.crimson}80` }} />
+                    RAG · {docsCount} {es ? 'fuentes' : 'sources'} · gemini-2.5-flash-preview
+                </p>
+            </div>;
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════════
+        // CLIENT VIEW
+        // ══════════════════════════════════════════════════════════════════════════════
+        function ClientView({ onLogout }) {
+            const [messages, setMessages] = useState([]);
+            const [input, setInput] = useState('');
+            const [typing, setTyping] = useState(false);
+            const [lang, setLang] = useState('es');
+            const [project] = useState('Vanessa Nutrióloga');
+            const bottomRef = useRef();
+            const es = lang === 'es';
+
+            useEffect(() => {
+                // Welcome message
+                setMessages([{
+                    role: 'assistant', text: es
+                        ? '¡Hola! Soy el asistente virtual de Vanessa Nutrióloga. ¿En qué puedo ayudarte hoy?'
+                        : 'Hi! I am the virtual assistant for Vanessa Nutrióloga. How can I help you today?'
+                }]);
+            }, []);
+
+            useEffect(() => {
+                const el = bottomRef.current?.parentElement;
+                if (el) el.scrollTop = el.scrollHeight;
+            }, [messages, typing]);
+
+            const send = () => {
+                if (!input.trim() || typing) return;
+                const txt = input; setInput('');
+                setMessages(m => [...m, { role: 'user', text: txt }]);
+                setTyping(true);
+                setTimeout(() => {
+                    setMessages(m => [...m, {
+                        role: 'assistant', text: es
+                            ? 'Gracias por tu pregunta. Basándome en la información disponible, puedo orientarte sobre este tema nutricional. Te recomendaría agendar una consulta para una respuesta más personalizada.'
+                            : 'Thank you for your question. Based on available information, I can guide you on this nutritional topic. I would recommend scheduling a consultation for a more personalized answer.'
+                    }]);
+                    setTyping(false);
+                }, 1600);
+            };
+
+            const suggestedQs = [
+                es ? '¿Cuántas calorías debo consumir?' : 'How many calories should I consume?',
+                es ? '¿Qué es la dieta keto?' : 'What is the keto diet?',
+                es ? '¿Cómo mejorar mi metabolismo?' : 'How to improve my metabolism?',
+            ];
+
+            return <div style={{
+                height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column',
+                background: '#f8f9ff', overflow: 'hidden'
+            }}>
+                {/* Header */}
+                <header style={{
+                    height: 60, flexShrink: 0, background: C.surface,
+                    borderBottom: `1px solid ${C.border}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '0 24px', boxShadow: C.shadow,
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{
+                            width: 36, height: 36, borderRadius: 9, background: C.crimson,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: `0 2px 10px ${C.crimsonGlow}`
+                        }}>
+                            <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+                                <path d="M7 1L12 4V10L7 13L2 10V4L7 1Z" fill="white" opacity="0.9" />
+                                <path d="M7 5L9.5 6.5V9.5L7 11L4.5 9.5V6.5L7 5Z" fill={C.crimson} />
+                            </svg>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: C.tx }}>{project}</div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ width: 5, height: 5, borderRadius: '50%', background: C.green, boxShadow: `0 0 5px ${C.green}80` }} />
+                                <span style={{ fontSize: 11, color: C.txS }}>{es ? 'Asistente en línea' : 'Assistant online'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                        <div style={{ display: 'flex', background: C.bg, borderRadius: 7, padding: 3 }}>
+                            {['es', 'en'].map(l => <button key={l} onClick={() => setLang(l)} style={{
+                                padding: '4px 10px', border: 'none', borderRadius: 5,
+                                background: lang === l ? C.surface : 'transparent',
+                                color: lang === l ? C.tx : C.txM, fontSize: 11, fontWeight: lang === l ? 600 : 400,
+                                cursor: 'pointer', fontFamily: 'Space Grotesk', transition: 'all 0.15s',
+                            }}>{l.toUpperCase()}</button>)}
+                        </div>
+                        <button onClick={onLogout} style={{
+                            background: 'none', border: `1px solid ${C.border}`,
+                            borderRadius: 7, padding: '6px 12px', cursor: 'pointer', fontSize: 12, color: C.txS, fontFamily: 'Space Grotesk',
+                            transition: 'all 0.15s'
+                        }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = C.crimson; e.currentTarget.style.color = C.crimson; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.txS; }}>
+                            {es ? 'Salir' : 'Logout'}
+                        </button>
+                    </div>
+                </header>
+
+                {/* Chat area */}
+                <div style={{
+                    flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column',
+                    gap: 18, maxWidth: 760, width: '100%', margin: '0 auto', boxSizing: 'border-box'
+                }}>
+                    {messages.map((m, i) => <div key={i} style={{ display: 'flex', gap: 10, flexDirection: m.role === 'user' ? 'row-reverse' : 'row' }}>
+                        {m.role === 'assistant' && <div style={{
+                            width: 34, height: 34, borderRadius: '50%', flexShrink: 0, marginTop: 2,
+                            background: `linear-gradient(135deg,${C.crimson},${C.crimsonMid})`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff',
+                            boxShadow: `0 2px 10px ${C.crimsonGlow}`
+                        }}>B</div>}
+                        <div style={{ maxWidth: '75%' }}>
+                            {m.role === 'assistant' && <span style={{ fontSize: 10, color: C.txM, display: 'block', marginBottom: 5, fontWeight: 500 }}>Asistente · bran.ai</span>}
+                            <div style={{
+                                background: m.role === 'user' ? C.crimson : C.surface,
+                                border: `1px solid ${m.role === 'user' ? 'transparent' : C.border}`,
+                                borderRadius: m.role === 'user' ? '16px 4px 16px 16px' : '4px 16px 16px 16px',
+                                padding: '13px 17px', boxShadow: C.shadow,
+                            }}>
+                                <p style={{ fontSize: 14, color: m.role === 'user' ? '#fff' : C.tx, lineHeight: 1.65, textWrap: 'pretty' }}>{m.text}</p>
+                            </div>
+                        </div>
+                    </div>)}
+
+                    {/* Suggested questions (only at start) */}
+                    {messages.length <= 1 && !typing && <div style={{ marginTop: 8 }}>
+                        <p style={{ fontSize: 11, color: C.txM, marginBottom: 10, fontWeight: 500, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{es ? 'Preguntas frecuentes' : 'Suggested questions'}</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {suggestedQs.map((q, i) => <button key={i} onClick={() => { setInput(q); }} style={{
+                                padding: '11px 16px', border: `1px solid ${C.border}`, borderRadius: 10,
+                                background: C.surface, color: C.txS, fontSize: 13, cursor: 'pointer',
+                                fontFamily: 'Space Grotesk', textAlign: 'left', boxShadow: C.shadow,
+                                transition: 'all 0.15s',
+                            }}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = C.crimson; e.currentTarget.style.color = C.crimson; e.currentTarget.style.background = C.crimsonDim; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.txS; e.currentTarget.style.background = C.surface; }}>
+                                {q}
+                            </button>)}
+                        </div>
+                    </div>}
+
+                    {typing && <div style={{ display: 'flex', gap: 10 }}>
+                        <div style={{
+                            width: 34, height: 34, borderRadius: '50%', background: `linear-gradient(135deg,${C.crimson},${C.crimsonMid})`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff'
+                        }}>B</div>
+                        <div style={{
+                            background: C.surface, border: `1px solid ${C.border}`, borderRadius: '4px 16px 16px 16px',
+                            padding: '15px 18px', display: 'flex', gap: 5, alignItems: 'center', boxShadow: C.shadow
+                        }}>
+                            {[0, 1, 2].map(i => <span key={i} style={{ width: 7, height: 7, borderRadius: '50%', background: C.crimson, animation: `bounce 1s ${i * 0.2}s infinite` }} />)}
+                        </div>
+                    </div>}
+                    <div ref={bottomRef} />
+                </div>
+
+                {/* Input */}
+                <div style={{ background: C.surface, borderTop: `1px solid ${C.border}`, padding: '16px 24px', boxShadow: '0 -2px 12px rgba(26,29,53,0.06)' }}>
+                    <div style={{ maxWidth: 760, margin: '0 auto', display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+                        <textarea value={input} onChange={e => setInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+                            placeholder={es ? 'Escribe tu pregunta…' : 'Type your question…'}
+                            rows={1} style={{ ...IS, resize: 'none', flex: 1, minHeight: 46, maxHeight: 140, lineHeight: 1.6, padding: '12px 16px', fontSize: 14 }} />
+                        <button onClick={send} disabled={!input.trim() || typing} style={{
+                            width: 46, height: 46, borderRadius: 11, border: 'none', flexShrink: 0,
+                            background: input.trim() && !typing ? C.crimson : C.border,
+                            cursor: input.trim() && !typing ? 'pointer' : 'default',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            transition: 'background 0.2s,box-shadow 0.2s',
+                            boxShadow: input.trim() && !typing ? `0 4px 14px ${C.crimsonGlow}` : 'none',
+                        }}>
+                            <svg width="17" height="17" viewBox="0 0 16 16" fill="none"><path d="M14 2L7 9M14 2L9.5 14 7 9 2 6.5 14 2z" stroke={input.trim() && !typing ? '#fff' : C.txM} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                        </button>
+                    </div>
+                    <p style={{ fontSize: 10, color: C.txM, marginTop: 7, textAlign: 'center' }}>{es ? 'Impulsado por' : 'Powered by'} <strong style={{ color: C.crimson }}>bran.ai</strong> · RAG sobre base de conocimiento</p>
+                </div>
+            </div>;
+        }
+
+        // ══════════════════════════════════════════════════════════════════════════════
+        // ROOT
+        // ══════════════════════════════════════════════════════════════════════════════
+        function App() {
+            const [view, setView] = useState('auth'); // auth | admin | client
+            const [role, setRole] = useState('admin');
+            const [screen, setScreen] = useState('dashboard');
+            const [lang, setLang] = useState('es');
+
+            if (view === 'auth') return <AuthScreen onLogin={r => { setRole(r); setView(r === 'admin' ? 'admin' : 'client'); }} />;
+            if (view === 'client') return <ClientView onLogout={() => setView('auth')} />;
+
+            return <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+                <AdminSidebar screen={screen} setScreen={setScreen} lang={lang} setLang={setLang} onLogout={() => setView('auth')} />
+                <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                    <Topbar screen={screen} lang={lang} />
+                    <div style={{ flex: 1, overflow: 'hidden' }}>
+                        {screen === 'dashboard' && <DashboardScreen lang={lang} />}
+                        {screen === 'kb' && <KBScreen lang={lang} />}
+                        {screen === 'chat' && <AdminChatScreen lang={lang} />}
+                    </div>
+                </div>
+            </div>;
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+
+</html>

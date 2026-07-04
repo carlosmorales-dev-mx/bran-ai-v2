@@ -1,0 +1,20 @@
+{
+    "name": "bran-ai",
+    "private": true,
+    "scripts": {
+        "dev": "pnpm -r --parallel dev",
+        "dev:backend": "pnpm --filter backend dev",
+        "dev:frontend": "pnpm --filter frontend dev",
+        "dev:rag": "pnpm --filter rag dev",
+        "db:migrate": "dotenv -e .env -- pnpm --filter backend exec prisma migrate dev --name init",
+        "db:generate": "dotenv -e .env -- pnpm --filter backend exec prisma generate",
+        "db:reset": "dotenv -e .env -- pnpm --filter backend exec prisma migrate reset",
+        "db:studio": "dotenv -e .env -- pnpm --filter backend exec prisma studio"
+    },
+    "dependencies": {
+        "dotenv": "^17.4.2"
+    },
+    "devDependencies": {
+        "dotenv-cli": "^11.0.0"
+    }
+}

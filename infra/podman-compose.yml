@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  chromadb:
+    image: docker.io/chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma
+    environment:
+      IS_PERSISTENT: "TRUE"
+      PERSIST_DIRECTORY: /chroma
+    restart: unless-stopped
+
+volumes:
+  chroma_data:
